@@ -32,14 +32,39 @@ export default {
     const GameCanvas = () => {
       const canvas = game.value;
       const ctx = canvas.getContext("2d");
+
       const g = {
         canvas,
         ctx,
+        actions: {},
+        keydowns: {},
+      };
+
+      document.addEventListener("keydown", (e) => {
+        g.keydowns[e.key] = true;
+      });
+
+      document.addEventListener("keyup", (e) => {
+        g.keydowns[e.key] = false;
+      });
+
+      // 订阅
+      g.registerActions = (key, callback) => {
+        g.actions[key] = callback;
       };
 
       setInterval(() => {
+        // 发布
+        const actions = Object.keys(g.actions);
+        for (let i = 0; i < actions.length; i++) {
+          const key = actions[i];
+          if (g.keydowns[key]) {
+            g.actions[key]();
+          }
+        }
+
         // 更新
-        g.update();
+        // g.update();
 
         //渲染
         g.draw();
@@ -53,29 +78,17 @@ export default {
 
       const game = GameCanvas();
 
+      let toLeft = false;
+      let toRight = false;
       game.ctx.fillStyle = "orange";
       game.ctx.fillRect(paddle.x, 320, 100, 15);
 
-      let toLeft = false;
-      let toRight = false;
-
-      //控制挡板左右
-      document.addEventListener("keydown", (e) => {
-        const key = e.key;
-        if (key === "s") {
-          toLeft = true;
-        } else if (key === "d") {
-          toRight = true;
-        }
+      game.registerActions("s", () => {
+        paddle.toLeft();
       });
 
-      document.addEventListener("keyup", (e) => {
-        const key = e.key;
-        if (key === "s") {
-          toLeft = false;
-        } else if (key === "d") {
-          toRight = false;
-        }
+      game.registerActions("d", () => {
+        paddle.toRight();
       });
 
       game.update = () => {
