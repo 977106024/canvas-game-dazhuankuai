@@ -12,7 +12,28 @@ export default {
 
     onMounted(() => {
       _main();
+      //   draw();
     });
+
+    function draw() {
+      var ctx = document.getElementById("canvas").getContext("2d");
+      for (var i = 0; i < 6; i++) {
+        for (var j = 0; j < 6; j++) {
+          ctx.fillStyle =
+            "rgb(" +
+            Math.floor(255 - 42.5 * i) +
+            "," +
+            Math.floor(255 - 42.5 * j) +
+            ",0)";
+          ctx.fillRect(j * 25, i * 25, 25, 25);
+        }
+      }
+    }
+
+    // const graph = (ctx)=>{
+    //      ctx.fillStyle = "orange";
+    //     ctx.fillRect(paddle.x, 320, 100, 15);
+    // }
 
     const Paddle = () => {
       const obj = {
@@ -26,6 +47,36 @@ export default {
       obj.toRight = () => {
         obj.x += 5;
       };
+      return obj;
+    };
+
+    const Ball = () => {
+      const obj = {
+        x: 150,
+        y: 300,
+        fired: false,
+        speedX: 10,
+        speedY: 10,
+      };
+
+      obj.fire = () => {
+        obj.fired = true;
+      };
+
+       // 球移动 
+      obj.move = () => {
+        if (obj.fired) {
+          if (obj.x < 0 || obj.x > 400) {
+            obj.speedX = -obj.speedX;
+          }
+          if (obj.y < 0 || obj.y > 400) {
+            obj.speedY = -obj.speedY;
+          }
+          obj.x += obj.speedX;
+          obj.y += obj.speedY;
+        }
+      };
+
       return obj;
     };
 
@@ -64,7 +115,7 @@ export default {
         }
 
         // 更新
-        // g.update();
+        g.update();
 
         //渲染
         g.draw();
@@ -78,11 +129,18 @@ export default {
 
       const game = GameCanvas();
 
-      let toLeft = false;
-      let toRight = false;
-      game.ctx.fillStyle = "orange";
-      game.ctx.fillRect(paddle.x, 320, 100, 15);
+      const ball = Ball();
 
+      //   let toLeft = false;
+      //   let toRight = false;
+      const ctx = game.ctx;
+      ctx.fillStyle = "orange";
+      ctx.fillRect(paddle.x, 320, 100, 15);
+
+      ctx.fillStyle = "green";
+      ctx.fillRect(ball.x, ball.y, 25, 25);
+
+      // 注册按键
       game.registerActions("s", () => {
         paddle.toLeft();
       });
@@ -91,17 +149,21 @@ export default {
         paddle.toRight();
       });
 
+      game.registerActions("f", () => {
+        ball.fire();
+      });
+
       game.update = () => {
-        if (toLeft) {
-          paddle.toLeft();
-        } else if (toRight) {
-          paddle.toRight();
-        }
+        ball.move();
       };
 
       game.draw = () => {
-        game.ctx.clearRect(0, 0, game.canvas.width, game.canvas.height); // 清除整个画布
-        game.ctx.fillRect(paddle.x, 320, 100, 15);
+        ctx.clearRect(0, 0, game.canvas.width, game.canvas.height); // 清除整个画布
+        ctx.fillStyle = "orange";
+        ctx.fillRect(paddle.x, 320, 100, 15);
+
+        ctx.fillStyle = "green";
+        ctx.fillRect(ball.x, ball.y, 25, 25);
       };
     };
 
